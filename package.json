@@ -9,14 +9,14 @@
     "start": "vercel start"
   },
   "dependencies": {
-    "axios": "^0.21.1",              // Betrouwbare versie van axios voor oudere versies van Node
-    "cheerio": "^0.22.0",            // Stabiele versie van cheerio voor text-extractie
-    "puppeteer-core": "^5.5.0",      // Versie van puppeteer die lichter is voor serverless omgevingen
-    "chrome-aws-lambda": "^5.1.0"    // Specifieke versie van chrome-aws-lambda om puppeteer met Vercel te draaien
+    "axios": "^0.21.1",          
+    "cheerio": "^0.22.0",          
+    "puppeteer-core": "^5.5.0",     
+    "chrome-aws-lambda": "^5.1.0"  
   },
   "devDependencies": {},
   "engines": {
-    "node": "14.x"  // Node.js versie 14.x is een betrouwbare versie voor Vercel
+    "node": "14.x"  
   },
   "license": "MIT"
 }
