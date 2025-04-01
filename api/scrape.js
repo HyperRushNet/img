@@ -24,16 +24,6 @@ export default async function handler(req, res) {
     // Haal de meta-beschrijving van de pagina (indien aanwezig)
     const description = $("meta[name='description']").attr("content") || "No description available";
 
-    // Haal de Open Graph (og) gegevens (indien aanwezig)
-    const ogTitle = $("meta[property='og:title']").attr("content") || title;
-    const ogDescription = $("meta[property='og:description']").attr("content") || description;
-    const ogImage = $("meta[property='og:image']").attr("content");
-
-    // Haal Twitter Card-gegevens (indien aanwezig)
-    const twitterTitle = $("meta[name='twitter:title']").attr("content") || ogTitle;
-    const twitterDescription = $("meta[name='twitter:description']").attr("content") || ogDescription;
-    const twitterImage = $("meta[name='twitter:image']").attr("content") || ogImage;
-
     // Haal alle koppen (h1 - h6)
     const headings = [];
     $("h1, h2, h3, h4, h5, h6").each((i, el) => {
@@ -110,7 +100,29 @@ export default async function handler(req, res) {
       }
     });
 
-    // Extra: Haal arrays of andere embedded gegevens (bijv. data-attributes)
+    // Extra: Haal arrays van JavaScript-variabelen ingesloten in de pagina
+    const jsArrays = [];
+    $("script").each((i, el) => {
+      const scriptContent = $(el).html();
+      
+      // Zoek naar arrays binnen scripts (bijvoorbeeld, window.someArray = [...])
+      const arrayMatches = scriptContent.match(/(\w+\s*=\s*\[.*?\])/g);
+      if (arrayMatches) {
+        arrayMatches.forEach((match) => {
+          try {
+            // Probeer de array te extraheren
+            const extractedArray = eval(match);
+            if (Array.isArray(extractedArray)) {
+              jsArrays.push(extractedArray);
+            }
+          } catch (e) {
+            // Als het niet kan worden geëvalueerd, sla het dan over
+          }
+        });
+      }
+    });
+
+    // Extra: Haal arrays van data-attributes van HTML-elementen
     const dataAttributes = [];
     $("*[data]").each((i, el) => {
       const dataAttrs = {};
@@ -128,12 +140,6 @@ export default async function handler(req, res) {
     const scrapedData = {
       title,
       description,
-      ogTitle,
-      ogDescription,
-      ogImage,
-      twitterTitle,
-      twitterDescription,
-      twitterImage,
       headings,
       paragraphs,
       lists,
@@ -141,7 +147,8 @@ export default async function handler(req, res) {
       images,
       tables,
       schemaData,
-      dataAttributes,
+      jsArrays, // Arrays die via JavaScript zijn ingesloten
+      dataAttributes, // Data-attributes van HTML-elementen
     };
 
     // Stuur het antwoord terug naar de gebruiker
