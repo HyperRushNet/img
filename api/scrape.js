@@ -18,44 +18,52 @@ export default async function handler(req, res) {
     // Laad de HTML met Cheerio
     const $ = cheerio.load(data);
 
-    // Haal de titel van de pagina
+    // Verzamel de volledige HTML-inhoud
+    const htmlContent = $.html();  // Hele HTML van de pagina
+
+    // Verzamel de metadata (titel, beschrijving, enz.)
     const title = $("head title").text().trim();
-
-    // Haal de meta-beschchrijving van de pagina (indien aanwezig)
     const description = $("meta[name='description']").attr("content") || "No description available";
+    const keywords = $("meta[name='keywords']").attr("content") || "No keywords available";
 
-    // Verzamel arrays die in de script-tag worden gedeeld zonder specifieke naam
-    const arrays = {
-      scriptArrays: [],
-    };
-
-    // Haal arrays van JavaScript binnen de script tags
+    // Verzamel alle <script> tags en hun inhoud
+    const scripts = [];
     $("script").each((i, el) => {
       const scriptContent = $(el).html();
-      
-      // Zoek naar array-declaraties zonder specifiek te weten hoe de array heet
-      const arrayMatches = scriptContent.match(/\[\s*(\{.*?\}|\[.*?\])\s*\]/g); // Herken arrays van objecten of andere arrays
+      scripts.push(scriptContent);
+    });
 
-      if (arrayMatches) {
-        arrayMatches.forEach((match) => {
-          try {
-            // Probeer de array te extraheren
-            const extractedArray = eval(match);
-            if (Array.isArray(extractedArray)) {
-              arrays.scriptArrays.push(extractedArray);
-            }
-          } catch (e) {
-            // Als de evaluatie niet werkt, sla het dan over
-          }
-        });
-      }
+    // Verzamel alle <style> tags en hun inhoud
+    const styles = [];
+    $("style").each((i, el) => {
+      const styleContent = $(el).html();
+      styles.push(styleContent);
+    });
+
+    // Verzamel alle externe CSS-bestanden in <link> tags
+    const externalStyles = [];
+    $("link[rel='stylesheet']").each((i, el) => {
+      const href = $(el).attr("href");
+      externalStyles.push(href);
+    });
+
+    // Verzamel alle externe JavaScript-bestanden in <script> tags
+    const externalScripts = [];
+    $("script[src]").each((i, el) => {
+      const src = $(el).attr("src");
+      externalScripts.push(src);
     });
 
     // Structuur de verzamelde gegevens
     const scrapedData = {
       title,
       description,
-      arrays, // Verzamel alle gevonden arrays
+      keywords,
+      htmlContent,       // Hele HTML van de pagina
+      scripts,           // Inline JavaScript-inhoud
+      styles,            // Inline CSS-inhoud
+      externalStyles,    // Externe CSS-bestanden
+      externalScripts,   // Externe JavaScript-bestanden
     };
 
     // Stuur het antwoord terug naar de gebruiker
