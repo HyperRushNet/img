@@ -1,9 +1,21 @@
 {
   "name": "vercel-scraper",
   "version": "1.0.0",
-  "main": "api/scrape.js",
+  "description": "A serverless scraper to extract text from web pages",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev", 
+    "build": "vercel build",
+    "start": "vercel start"
+  },
   "dependencies": {
-    "axios": "^0.27.2",
-    "cheerio": "^1.0.0-rc.10"
-  }
+    "axios": "^1.2.0",
+    "cheerio": "^1.0.0-rc.12",
+    "puppeteer": "^19.0.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": "16.x"
+  },
+  "license": "MIT"
 }
