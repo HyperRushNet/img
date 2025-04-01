@@ -11,7 +11,7 @@
     "puppeteer": "^19.0.0"
   },
   "engines": {
-    "node": "22.x"
+    "node": "16.x"
   },
   "devDependencies": {
     "vercel": "^30.0.0"
