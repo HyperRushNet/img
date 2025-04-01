@@ -1,22 +1,13 @@
-{
-  "name": "vercel-scraper",
-  "version": "1.0.0",
-  "description": "A serverless scraper to extract text from web pages",
-  "main": "index.js",
-  "scripts": {
-    "dev": "vercel dev", 
-    "build": "vercel build",
-    "start": "vercel start"
-  },
-  "dependencies": {
-    "axios": "^0.21.1",          
-    "cheerio": "^0.22.0",          
-    "puppeteer-core": "^5.5.0",     
-    "chrome-aws-lambda": "^5.1.0"  
-  },
-  "devDependencies": {},
-  "engines": {
-    "node": "22.x"  
-  },
-  "license": "MIT"
-}
+  {
+    "name": "mijn-puppeteer-api",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+      "dev": "vercel dev",
+      "start": "vercel start"
+    },
+    "dependencies": {
+      "@sparticuz/chromium": "^1.0.0",
+      "puppeteer-core": "^22.0.0"
+    }
+  }
