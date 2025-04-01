@@ -26,11 +26,10 @@ export default async function handler(req, res) {
     const description = $("meta[name='description']").attr("content") || "No description available";
     const keywords = $("meta[name='keywords']").attr("content") || "No keywords available";
 
-    // Filter: Verzamel alleen belangrijke <script> inhoud
+    // Filter: Verzamel alleen belangrijke <script> inhoud (zoals eerder)
     const scripts = [];
     $("script").each((i, el) => {
       const scriptContent = $(el).html();
-      // Alleen inline scripts zonder externe bronnen
       if (scriptContent && !$(el).attr("src")) {
         scripts.push(scriptContent);
       }
@@ -45,48 +44,16 @@ export default async function handler(req, res) {
       }
     });
 
-    // Filter: Verzamel alleen relevante externe stijlen (geen externe analytics of ad-services)
-    const externalStyles = [];
-    $("link[rel='stylesheet']").each((i, el) => {
-      const href = $(el).attr("href");
-      if (href && !href.includes("analytics") && !href.includes("ads")) {
-        externalStyles.push(href);
+    // Verzamel alleen **platte tekst** van de pagina (zonder HTML-tags)
+    const mainContentText = [];
+    
+    // Haal tekst uit de belangrijkste elementen (hoofdinhoud)
+    $("body").each((i, el) => {
+      // Haal alleen de tekst uit de body van de pagina
+      const bodyText = $(el).text().trim();
+      if (bodyText) {
+        mainContentText.push(bodyText);
       }
-    });
-
-    // Filter: Verzamel alleen relevante externe scripts
-    const externalScripts = [];
-    $("script[src]").each((i, el) => {
-      const src = $(el).attr("src");
-      if (src && !src.includes("analytics") && !src.includes("ads")) {
-        externalScripts.push(src);
-      }
-    });
-
-    // Verzamel de belangrijkste inhoud zoals tekst uit paragrafen, headers, en lijsten
-    const mainContent = {
-      paragraphs: [],
-      headers: [],
-      lists: []
-    };
-
-    // Haal tekst uit paragrafen (<p>) en voeg toe
-    $("p").each((i, el) => {
-      mainContent.paragraphs.push($(el).text().trim());
-    });
-
-    // Haal tekst uit headers (<h1>, <h2>, <h3>, ...) en voeg toe
-    $("h1, h2, h3, h4, h5, h6").each((i, el) => {
-      mainContent.headers.push($(el).text().trim());
-    });
-
-    // Haal tekst uit ongeordende en geordende lijsten (<ul>, <ol>) en voeg toe
-    $("ul, ol").each((i, el) => {
-      const listItems = [];
-      $(el).find("li").each((j, li) => {
-        listItems.push($(li).text().trim());
-      });
-      mainContent.lists.push(listItems);
     });
 
     // Structuur de verzamelde gegevens met filters
@@ -97,9 +64,7 @@ export default async function handler(req, res) {
       htmlContent,       // Hele HTML van de pagina
       scripts,           // Inline JavaScript-inhoud
       styles,            // Inline CSS-inhoud
-      externalStyles,    // Externe CSS-bestanden
-      externalScripts,   // Externe JavaScript-bestanden
-      mainContent        // Hoofdinhoud van de pagina (paragrafen, headers, lijsten)
+      mainContentText    // Platte tekstinhoud van de pagina
     };
 
     // Stuur het antwoord terug naar de gebruiker
