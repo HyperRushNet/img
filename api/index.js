@@ -1,43 +1,20 @@
-  import chromium from '@sparticuz/chromium';
-  import puppeteer from 'puppeteer-core';
+const puppeteer = require('puppeteer');
 
-  let browser = null;
-
-  const chromeArgs = [
-    '--font-render-hinting=none',
-    '--no-sandbox',
-    '--disable-setuid-sandbox',
-  ];
-
-  export const takeScreenshot = async (req, res) => {
-    const { url } = req.query;
-
-    if (!url) {
-      res.status(400).send('URL is verplicht');
-      return;
-    }
-
+module.exports = async (req, res) => {
     try {
-      if (!browser?.isConnected()) {
-        chromium.setGraphicMode = false;
-        browser = await puppeteer.launch({
-          args: chromeArgs,
-          executablePath: await chromium.executablePath(),
-          ignoreHTTPSErrors: true,
-        });
-      }
+        const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
+        const page = await browser.newPage();
+        await page.goto('https://www.google.com');
+        await page.type('input[name=q]', 'site:example.com');
+        await page.keyboard.press('Enter');
+        await page.waitForSelector('#result-stats');
+        const resultStats = await page.$eval('#result-stats', el => el.innerText);
+        await browser.close();
 
-      const page = await browser.newPage();
-      await page.setViewport({ width: 1280, height: 800 });
-      await page.goto(url, { waitUntil: 'domcontentloaded' });
-
-      const screenshot = await page.screenshot({ type: 'png', omitBackground: true });
-
-      res.setHeader('Content-Type', 'image/png');
-      res.status(200).send(screenshot);
+        // Stuur het resultaat terug naar de client
+        res.status(200).send(resultStats);
     } catch (error) {
-      res.status(500).send(`Fout bij het maken van screenshot: ${error.message}`);
+        console.error('Error occurred:', error);
+        res.status(500).send('Internal Server Error');
     }
-  };
-
-  export default takeScreenshot;
+};
