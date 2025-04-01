@@ -24,6 +24,16 @@ export default async function handler(req, res) {
     // Haal de meta-beschrijving van de pagina (indien aanwezig)
     const description = $("meta[name='description']").attr("content") || "No description available";
 
+    // Haal de Open Graph (og) gegevens (indien aanwezig)
+    const ogTitle = $("meta[property='og:title']").attr("content") || title;
+    const ogDescription = $("meta[property='og:description']").attr("content") || description;
+    const ogImage = $("meta[property='og:image']").attr("content");
+
+    // Haal Twitter Card-gegevens (indien aanwezig)
+    const twitterTitle = $("meta[name='twitter:title']").attr("content") || ogTitle;
+    const twitterDescription = $("meta[name='twitter:description']").attr("content") || ogDescription;
+    const twitterImage = $("meta[name='twitter:image']").attr("content") || ogImage;
+
     // Haal alle koppen (h1 - h6)
     const headings = [];
     $("h1, h2, h3, h4, h5, h6").each((i, el) => {
@@ -34,6 +44,27 @@ export default async function handler(req, res) {
     const paragraphs = [];
     $("p").each((i, el) => {
       paragraphs.push($(el).text().trim());
+    });
+
+    // Haal alle lijstitems (ul, ol)
+    const lists = {
+      unordered: [],
+      ordered: [],
+    };
+    $("ul").each((i, el) => {
+      const items = [];
+      $(el).find("li").each((j, li) => {
+        items.push($(li).text().trim());
+      });
+      lists.unordered.push(items);
+    });
+
+    $("ol").each((i, el) => {
+      const items = [];
+      $(el).find("li").each((j, li) => {
+        items.push($(li).text().trim());
+      });
+      lists.ordered.push(items);
     });
 
     // Haal alle links (a)
@@ -79,16 +110,38 @@ export default async function handler(req, res) {
       }
     });
 
+    // Extra: Haal arrays of andere embedded gegevens (bijv. data-attributes)
+    const dataAttributes = [];
+    $("*[data]").each((i, el) => {
+      const dataAttrs = {};
+      Object.keys($(el)[0].attribs).forEach(attr => {
+        if (attr.startsWith("data-")) {
+          dataAttrs[attr] = $(el).attr(attr);
+        }
+      });
+      if (Object.keys(dataAttrs).length > 0) {
+        dataAttributes.push(dataAttrs);
+      }
+    });
+
     // Structuur de verzamelde gegevens
     const scrapedData = {
       title,
       description,
+      ogTitle,
+      ogDescription,
+      ogImage,
+      twitterTitle,
+      twitterDescription,
+      twitterImage,
       headings,
       paragraphs,
+      lists,
       links,
       images,
       tables,
       schemaData,
+      dataAttributes,
     };
 
     // Stuur het antwoord terug naar de gebruiker
