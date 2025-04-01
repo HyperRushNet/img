@@ -21,65 +21,31 @@ export default async function handler(req, res) {
     // Haal de titel van de pagina
     const title = $("head title").text().trim();
 
-    // Haal de meta-beschrijving van de pagina (indien aanwezig)
+    // Haal de meta-beschchrijving van de pagina (indien aanwezig)
     const description = $("meta[name='description']").attr("content") || "No description available";
 
-    // Verzamel arrays van HTML-elementen
+    // Verzamel arrays die in de script-tag worden gedeeld zonder specifieke naam
     const arrays = {
-      unorderedLists: [],
-      orderedLists: [],
-      tables: [],
       scriptArrays: [],
-      gameArrays: [],
     };
 
-    // Haal de ongeordende lijsten (ul) en orden ze in een array
-    $("ul").each((i, el) => {
-      const listItems = [];
-      $(el).find("li").each((j, li) => {
-        listItems.push($(li).text().trim());
-      });
-      arrays.unorderedLists.push(listItems);
-    });
-
-    // Haal de geordende lijsten (ol) en orden ze in een array
-    $("ol").each((i, el) => {
-      const listItems = [];
-      $(el).find("li").each((j, li) => {
-        listItems.push($(li).text().trim());
-      });
-      arrays.orderedLists.push(listItems);
-    });
-
-    // Haal tabellen (table) en zet ze om in een array van rijen
-    $("table").each((i, el) => {
-      const rows = [];
-      $(el).find("tr").each((i, row) => {
-        const columns = [];
-        $(row).find("td, th").each((i, col) => {
-          columns.push($(col).text().trim());
-        });
-        rows.push(columns);
-      });
-      arrays.tables.push(rows);
-    });
-
-    // Haal arrays van JavaScript-objecten (bijvoorbeeld games array) in <script> tags
+    // Haal arrays van JavaScript binnen de script tags
     $("script").each((i, el) => {
       const scriptContent = $(el).html();
       
-      // Zoek naar arrays van objecten zoals const games = [{title: '...', link: '...'}, ...]
-      const arrayMatches = scriptContent.match(/const\s+\w+\s*=\s*\[(\{.*?\})\]/g);
+      // Zoek naar array-declaraties zonder specifiek te weten hoe de array heet
+      const arrayMatches = scriptContent.match(/\[\s*(\{.*?\}|\[.*?\])\s*\]/g); // Herken arrays van objecten of andere arrays
+
       if (arrayMatches) {
         arrayMatches.forEach((match) => {
           try {
-            // Probeer de array van objecten te extraheren met eval
-            const extractedArray = eval(match.split('=')[1].trim());
+            // Probeer de array te extraheren
+            const extractedArray = eval(match);
             if (Array.isArray(extractedArray)) {
-              arrays.gameArrays.push(extractedArray);
+              arrays.scriptArrays.push(extractedArray);
             }
           } catch (e) {
-            // Als het niet kan worden geëvalueerd, sla het dan over
+            // Als de evaluatie niet werkt, sla het dan over
           }
         });
       }
@@ -89,7 +55,7 @@ export default async function handler(req, res) {
     const scrapedData = {
       title,
       description,
-      arrays, // Verzamel arrays van verschillende HTML-elementen en JS-objecten
+      arrays, // Verzamel alle gevonden arrays
     };
 
     // Stuur het antwoord terug naar de gebruiker
