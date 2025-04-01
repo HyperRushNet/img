@@ -1,0 +1,19 @@
+{
+  "name": "puppeteer-vercel",
+  "version": "1.0.0",
+  "description": "A Vercel serverless function using Puppeteer",
+  "main": "api/index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "puppeteer": "^19.0.0"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "devDependencies": {
+    "vercel": "^30.0.0"
+  }
+}
