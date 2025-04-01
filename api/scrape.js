@@ -30,6 +30,7 @@ export default async function handler(req, res) {
       orderedLists: [],
       tables: [],
       scriptArrays: [],
+      gameArrays: [],
     };
 
     // Haal de ongeordende lijsten (ul) en orden ze in een array
@@ -63,19 +64,19 @@ export default async function handler(req, res) {
       arrays.tables.push(rows);
     });
 
-    // Haal arrays die in JavaScript binnen <script> tags zijn ingesloten
+    // Haal arrays van JavaScript-objecten (bijvoorbeeld games array) in <script> tags
     $("script").each((i, el) => {
       const scriptContent = $(el).html();
       
-      // Zoek naar array-declaraties binnen <script> tags zoals window.someArray = [ ... ]
-      const arrayMatches = scriptContent.match(/(\w+\s*=\s*\[.*?\])/g);
+      // Zoek naar arrays van objecten zoals const games = [{title: '...', link: '...'}, ...]
+      const arrayMatches = scriptContent.match(/const\s+\w+\s*=\s*\[(\{.*?\})\]/g);
       if (arrayMatches) {
         arrayMatches.forEach((match) => {
           try {
-            // Probeer de array te extraheren
-            const extractedArray = eval(match);
+            // Probeer de array van objecten te extraheren met eval
+            const extractedArray = eval(match.split('=')[1].trim());
             if (Array.isArray(extractedArray)) {
-              arrays.scriptArrays.push(extractedArray);
+              arrays.gameArrays.push(extractedArray);
             }
           } catch (e) {
             // Als het niet kan worden geëvalueerd, sla het dan over
@@ -88,7 +89,7 @@ export default async function handler(req, res) {
     const scrapedData = {
       title,
       description,
-      arrays, // Verzamel arrays van verschillende HTML-elementen
+      arrays, // Verzamel arrays van verschillende HTML-elementen en JS-objecten
     };
 
     // Stuur het antwoord terug naar de gebruiker
