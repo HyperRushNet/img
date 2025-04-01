@@ -1,19 +1,20 @@
 {
   "name": "puppeteer-vercel",
   "version": "1.0.0",
-  "description": "A Vercel serverless function using Puppeteer",
+  "description": "Een Vercel serverless functie die Puppeteer gebruikt",
   "main": "api/index.js",
   "scripts": {
     "dev": "vercel dev",
-    "deploy": "vercel --prod"
+    "build": "echo \"No build step required\"",
+    "start": "vercel start"
   },
   "dependencies": {
-    "puppeteer": "^19.0.0"
+    "puppeteer": "^19.0.0",
+    "lru-cache": "^7.0.0",
+    "@npmcli/fs": "^1.0.0",
+    "rimraf": "^4.0.0"
   },
   "engines": {
     "node": "18.x"
-  },
-  "devDependencies": {
-    "vercel": "^30.0.0"
   }
 }
