@@ -1,20 +1,35 @@
-const puppeteer = require('puppeteer');
+const chromium = require('@sparticuz/chromium-min');
+const puppeteer = require('puppeteer-core');
 
-module.exports = async (req, res) => {
-    try {
-        const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] });
-        const page = await browser.newPage();
-        await page.goto('https://www.google.com');
-        await page.type('input[name=q]', 'site:example.com');
-        await page.keyboard.press('Enter');
-        await page.waitForSelector('#result-stats');
-        const resultStats = await page.$eval('#result-stats', el => el.innerText);
-        await browser.close();
+exports.handler = async (event, context) => {
+  let browser = null;
 
-        // Stuur het resultaat terug naar de client
-        res.status(200).send(resultStats);
-    } catch (error) {
-        console.error('Error occurred:', error);
-        res.status(500).send('Internal Server Error');
+  try {
+    browser = await puppeteer.launch({
+      args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+      ignoreHTTPSErrors: true,
+    });
+
+    const page = await browser.newPage();
+    await page.goto('https://example.com');
+
+    // Voer hier verdere acties uit...
+
+    await browser.close();
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: 'Succesvol uitgevoerd' }),
+    };
+  } catch (error) {
+    if (browser !== null) {
+      await browser.close();
     }
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: error.message }),
+    };
+  }
 };
