@@ -7,9 +7,9 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const browser = await chromium.launch();
+    const browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    await page.goto(url, { waitUntil: 'load', timeout: 60000 });
     
     const content = await page.evaluate(() => {
       return document.body.innerText;
