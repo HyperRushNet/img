@@ -1,14 +1,13 @@
 {
-  "name": "mijn-puppeteer-project",
+  "name": "vercel-web-scraper",
   "version": "1.0.0",
-  "description": "Een serverloze functie op Vercel die Puppeteer gebruikt voor browserautomatisering.",
+  "description": "A simple web scraper API using Playwright for Vercel",
   "main": "api/index.js",
   "scripts": {
+    "dev": "vercel dev",
     "start": "node api/index.js"
   },
   "dependencies": {
-    "puppeteer-core": "18.0.5",
-    "@sparticuz/chromium": "106.0.0"
-  },
-  "devDependencies": {}
+    "playwright": "^1.40.0"
+  }
 }
