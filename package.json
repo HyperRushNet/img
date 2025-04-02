@@ -5,7 +5,8 @@
   "main": "api/index.js",
   "scripts": {
     "dev": "vercel dev",
-    "start": "node api/index.js"
+    "start": "node api/index.js",
+    "install": "npx playwright install --with-deps"
   },
   "dependencies": {
     "playwright": "^1.40.0"
