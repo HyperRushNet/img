@@ -1,4 +1,4 @@
-const chromium = require('@sparticuz/chromium-min');
+const chromium = require('@sparticuz/chromium');
 const puppeteer = require('puppeteer-core');
 
 exports.handler = async (event, context) => {
@@ -6,7 +6,7 @@ exports.handler = async (event, context) => {
 
   try {
     browser = await puppeteer.launch({
-      args: [...chromium.args, '--hide-scrollbars', '--disable-web-security'],
+      args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
       headless: chromium.headless,
@@ -18,18 +18,19 @@ exports.handler = async (event, context) => {
 
     // Voer hier verdere acties uit...
 
-    await browser.close();
     return {
       statusCode: 200,
       body: JSON.stringify({ message: 'Succesvol uitgevoerd' }),
     };
   } catch (error) {
-    if (browser !== null) {
-      await browser.close();
-    }
+    console.error('Fout bij het uitvoeren van de functie:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: error.message }),
     };
+  } finally {
+    if (browser !== null) {
+      await browser.close();
+    }
   }
 };
