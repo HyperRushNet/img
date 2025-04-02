@@ -1,14 +1,14 @@
-  {
-    "name": "mijn-puppeteer-project",
-    "version": "1.0.0",
-    "description": "Een serverloze functie op Vercel die Puppeteer gebruikt om screenshots te maken.",
-    "main": "api/screenshot.js",
-    "scripts": {
-      "start": "node api/screenshot.js"
-    },
-    "dependencies": {
-      "@sparticuz/chromium": "^1.0.0",
-      "puppeteer-core": "^21.0.0"
-    },
-    "devDependencies": {}
-  }
+{
+  "name": "mijn-puppeteer-project",
+  "version": "1.0.0",
+  "description": "Een serverloze functie op Vercel die Puppeteer gebruikt voor browserautomatisering.",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js"
+  },
+  "dependencies": {
+    "puppeteer-core": "18.0.5",
+    "@sparticuz/chromium": "106.0.0"
+  },
+  "devDependencies": {}
+}
