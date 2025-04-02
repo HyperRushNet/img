@@ -1,36 +1,37 @@
-const chromium = require('@sparticuz/chromium');
-const puppeteer = require('puppeteer-core');
+  const chromium = require('@sparticuz/chromium');
+  const puppeteer = require('puppeteer-core');
 
-exports.handler = async (event, context) => {
-  let browser = null;
+  module.exports = async (req, res) => {
+    let browser = null;
 
-  try {
-    browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-      ignoreHTTPSErrors: true,
-    });
+    try {
+      const executablePath = await chromium.executablePath();
 
-    const page = await browser.newPage();
-    await page.goto('https://example.com');
+      browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath,
+        headless: chromium.headless,
+      });
 
-    // Voer hier verdere acties uit...
+      const page = await browser.newPage();
+      const { url } = req.query;
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: 'Succesvol uitgevoerd' }),
-    };
-  } catch (error) {
-    console.error('Fout bij het uitvoeren van de functie:', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
-    };
-  } finally {
-    if (browser !== null) {
-      await browser.close();
+      if (!url) {
+        return res.status(400).json({ error: 'URL is vereist' });
+      }
+
+      await page.goto(url, { waitUntil: 'networkidle2' });
+      const screenshot = await page.screenshot({ fullPage: true });
+
+      res.setHeader('Content-Type', 'image/png');
+      res.status(200).end(screenshot);
+    } catch (error) {
+      console.error('Fout bij het maken van de screenshot:', error);
+      res.status(500).json({ error: 'Interne serverfout' });
+    } finally {
+      if (browser !== null) {
+        await browser.close();
+      }
     }
-  }
-};
+  };
