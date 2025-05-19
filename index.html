@@ -1,0 +1,77 @@
+<canvas id="glcanvas"></canvas>
+<script type="module">
+const c = document.getElementById("glcanvas"), gl = c.getContext("webgl2");
+c.width = innerWidth; c.height = innerHeight; gl.viewport(0,0,c.width,c.height);
+const vs = `#version 300 es
+in vec3 aPosition; in vec2 aUV;
+uniform mat4 uModel,uView,uProj; out vec2 vUV;
+void main(){vUV=aUV;gl_Position=uProj*uView*uModel*vec4(aPosition,1.0);}`;
+const fs = `#version 300 es
+precision mediump float; in vec2 vUV; uniform sampler2D uTexture;
+out vec4 fragColor; void main(){fragColor=texture(uTexture,vUV);}`;
+const sh=(t,s)=>{let r=gl.createShader(t);gl.shaderSource(r,s);gl.compileShader(r);return r};
+const prog=gl.createProgram(); gl.attachShader(prog,sh(gl.VERTEX_SHADER,vs));
+gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,fs)); gl.linkProgram(prog); gl.useProgram(prog);
+const pos=new Float32Array([/* ... vertex data ... */]);
+const uv=new Float32Array(new Array(6).fill([0,0,1,0,1,1,0,0,1,1,0,1]).flat());
+let buf=a=>{let b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,a,gl.STATIC_DRAW);return b};
+// **aangepaste bindAttr** met 6 parameters
+let bindAttr=(buffer,name,size)=>{
+  const loc=gl.getAttribLocation(prog,name);
+  gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0);
+};
+bindAttr(buf(pos),"aPosition",3);
+bindAttr(buf(uv),"aUV",2);
+const [uM,uV,uP]=["uModel","uView","uProj"].map(n=>gl.getUniformLocation(prog,n));
+let tex=gl.createTexture(), img=new Image();
+img.src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqgQqhUkix-XMxEA6_e6k07MiMSdYozyAOCg&s";
+img.onload=()=>{
+  gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
+  ["MIN_FILTER","MAG_FILTER"].forEach(p=>gl.texParameteri(gl.TEXTURE_2D,gl["TEXTURE_"+p],gl.NEAREST));
+  ["S","T"].forEach(w=>gl.texParameteri(gl.TEXTURE_2D,gl["TEXTURE_WRAP_"+w],gl.CLAMP_TO_EDGE));
+};
+let m=()=>new Float32Array(16),
+    id=a=>a.set([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]),
+    persp=(o,f,a,n,fa)=>{const c=1/Math.tan(f/2),nf=1/(n-fa);o.set([c/a,0,0,0,0,c,0,0,0,0,(fa+n)*nf,-1,0,0,2*fa*n*nf,0]);},
+    rotY=(o,r)=>{id(o);const c=Math.cos(r),s=Math.sin(r);o[0]=c;o[2]=s;o[8]=-s;o[10]=c;},
+    view=m(), proj=m(), model=m();
+persp(proj,Math.PI/4,c.width/c.height,0.1,100);
+let cam=[0,0,5], yaw=0, pitch=0, keys={};
+onkeydown=e=>keys[e.key]=1; onkeyup=e=>keys[e.key]=0;
+c.onclick=()=>c.requestPointerLock();
+onmousemove=e=>{
+  if(document.pointerLockElement===c){
+    yaw -= e.movementX * .002;
+    pitch = Math.max(-1.5, Math.min(1.5, pitch - e.movementY * .002));
+  }
+};
+(function loop(t){
+  // camera-beweging
+  const fwd=[-Math.sin(yaw)*Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw)*Math.cos(pitch)];
+  const right=[Math.cos(yaw), 0, -Math.sin(yaw)];
+  const s=0.05;
+  if(keys.w) cam=cam.map((v,i)=>v+fwd[i]*s);
+  if(keys.s) cam=cam.map((v,i)=>v-fwd[i]*s);
+  if(keys.a) cam=cam.map((v,i)=>v-right[i]*s);
+  if(keys.d) cam=cam.map((v,i)=>v+right[i]*s);
+  // view matrix
+  const cx=Math.cos(yaw), sx=Math.sin(yaw), cy=Math.cos(pitch), sy=Math.sin(pitch);
+  view.set([cx,0,-sx,0, sx*sy,cy,cx*sy,0, cx*cy,-sy,sx*cy,0,
+    -cam[0]*cx - cam[1]*sx*sy - cam[2]*cx*cy,
+    -cam[1]*cy + cam[2]*sy,
+    cam[0]*sx - cam[1]*cx*sy - cam[2]*sx*cy,
+    1
+  ]);
+  rotY(model, t/1000);
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  gl.enable(gl.DEPTH_TEST);
+  gl.uniformMatrix4fv(uP, false, proj);
+  gl.uniformMatrix4fv(uV, false, view);
+  gl.uniformMatrix4fv(uM, false, model);
+  gl.drawArrays(gl.TRIANGLES, 0, 36);
+  requestAnimationFrame(loop);
+})(0);
+</script>
