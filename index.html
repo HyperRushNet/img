@@ -26,7 +26,7 @@ bindAttr(buf(pos),"aPosition",3);
 bindAttr(buf(uv),"aUV",2);
 const [uM,uV,uP]=["uModel","uView","uProj"].map(n=>gl.getUniformLocation(prog,n));
 let tex=gl.createTexture(), img=new Image();
-img.src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqgQqhUkix-XMxEA6_e6k07MiMSdYozyAOCg&s";
+img.src="https://hyperrushnet.github.io/img/shop/iphone16.png";
 img.onload=()=>{
   gl.bindTexture(gl.TEXTURE_2D,tex);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
